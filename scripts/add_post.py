@@ -42,6 +42,9 @@ IMGDIR = os.path.join(ROOT, "assets", "posts")
 SITE_URL = "https://axiekaka4.github.io/yongin-dongbaek-news/"
 CATEGORIES = {"admin": "행정소식", "place": "가볼 만한 곳", "shop": "동네 가게"}
 KST = dt.timezone(dt.timedelta(hours=9))
+# 로컬 git config에 user.name/user.email이 없을 때 쓰는 기본 값
+GIT_FALLBACK_NAME = "리드테니스 2호점"
+GIT_FALLBACK_EMAIL = "axiekaka4@users.noreply.github.com"
 
 
 def die(msg, code=1):
@@ -159,6 +162,54 @@ def git(args, check=True, capture=True):
                          capture_output=capture)
     if check and res.returncode != 0:
         die("git %s 실패: %s" % (" ".join(args), (res.stderr or res.stdout or "").strip()))
+    return res
+
+
+def git_identity_args():
+    """로컬 git config에 사용자 정보가 없으면 -c 로 넘길 기본 값을 돌려준다."""
+    missing = False
+    for key in ("user.name", "user.email"):
+        res = subprocess.run(["git", "config", "--get", key], cwd=ROOT,
+                             text=True, capture_output=True)
+        if not (res.stdout or "").strip():
+            missing = True
+            break
+    if not missing:
+        return []
+    warn("git user.name/user.email 설정이 없어 기본 값으로 커밋합니다.")
+    return ["-c", "user.name=" + GIT_FALLBACK_NAME,
+            "-c", "user.email=" + GIT_FALLBACK_EMAIL]
+
+
+def git_commit(message):
+    """커밋. 사용자 정보가 없거나 신원 확인 실패로 막히면 기본 값으로 재시도한다."""
+    res = git(git_identity_args() + ["commit", "-m", message], check=False)
+    if res.returncode == 0:
+        print("[깃] 커밋 완료")
+        return res
+
+    out = ((res.stderr or "") + "\n" + (res.stdout or "")).lower()
+    if "nothing to commit" in out or "no changes added to commit" in out:
+        print("[알림] 커밋할 변경 내용이 없습니다.")
+        return res
+
+    identity_hint = ("please tell me who you are", "unable to auto-detect email",
+                     "empty ident", "author identity unknown",
+                     "user.email", "user.name")
+    if any(h in out for h in identity_hint):
+        warn("git 사용자 정보가 없어 기본 값으로 다시 커밋합니다.")
+        res = git(["-c", "user.name=" + GIT_FALLBACK_NAME,
+                   "-c", "user.email=" + GIT_FALLBACK_EMAIL,
+                   "commit", "-m", message], check=False)
+        if res.returncode == 0:
+            print("[깃] 커밋 완료 (기본 사용자 정보 사용)")
+            return res
+        out = ((res.stderr or "") + "\n" + (res.stdout or "")).lower()
+        if "nothing to commit" in out or "no changes added to commit" in out:
+            print("[알림] 커밋할 변경 내용이 없습니다.")
+            return res
+
+    die("git commit 실패: %s" % (res.stderr or res.stdout or "").strip())
     return res
 
 
@@ -289,9 +340,7 @@ def main():
         die("git 저장소가 아닙니다. 먼저 클론하거나 git init 하세요: %s" % ROOT)
 
     git(["add", "-A", "data/posts.json", post["image"]])
-    git(["commit", "-m", "post: %s %s — %s" % (today, CATEGORIES[args.category], post["title"])],
-        check=False)
-    print("[깃] 커밋 완료")
+    git_commit("post: %s %s — %s" % (today, CATEGORIES[args.category], post["title"]))
 
     if not args.push:
         print("[알림] --push 가 없어 원격에는 올리지 않았습니다. 배포하려면 --push 로 다시 실행하거나 git push 하세요.")
