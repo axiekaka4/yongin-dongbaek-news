@@ -308,6 +308,9 @@ body.modal-open{overflow:hidden}
 
   .modal{align-items:center;padding:24px}
   .modal-panel{height:min(88vh,880px);border-radius:20px}
+  .modal-scroll{display:grid;grid-template-columns:minmax(210px,42%) 1fr;align-items:start}
+  .article-hero{position:sticky;top:0;aspect-ratio:auto;align-self:start;background:#efe9df}
+  .article-hero img{aspect-ratio:1/1;width:100%;height:auto;object-fit:cover}
   .article-inner{padding:24px 26px 34px}
   .article-title{font-size:25px}
   .info-row{grid-template-columns:96px 1fr}
