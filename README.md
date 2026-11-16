@@ -111,3 +111,7 @@ python3 -m http.server 8000
 - `main` 브랜치 루트를 그대로 서빙합니다 (`/.nojekyll` 포함 — Jekyll 처리 생략).
 - 푸시 후 1분 안에 https://axiekaka4.github.io/yongin-dongbaek-news/ 에 반영됩니다.
 - 이미지·JSON은 캐시되므로, 갱신이 안 보이면 새로고침(캐시 비우기) 하세요. `app.js` 는 `posts.json` 을 `no-store` 로 요청합니다.
+
+## 캐시 메모
+
+GitHub Pages는 CSS/JS/이미지를 최대 10분간 캐시합니다. `assets/css/style.css`, `assets/js/app.js` 를 고쳤다면 `index.html` 의 `?v=` 값을 올려 주세요(예: `?v=2026-11-18a`). `data/posts.json` 은 `no-store` 로 요청하므로 새 소식은 바로 반영됩니다.
