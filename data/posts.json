@@ -69,7 +69,10 @@
           "url": "http://www.yongin.go.kr/user/bbs/BD_selectBbs.do?q_bbsCode=1003&q_bbscttSn=20260720160304904"
         }
       ],
-      "instagram": {}
+      "instagram": {
+        "url": "https://www.instagram.com/p/DgED0k7hgXa/",
+        "label": "@yongin_dongbaek_news 게시물"
+      }
     },
     {
       "id": "2026-11-22-shop-2",
