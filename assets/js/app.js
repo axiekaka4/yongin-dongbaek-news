@@ -246,9 +246,17 @@
     if (!post) return false;
 
     var c = catOf(post);
-    var hero = post.image
-      ? '<div class="article-hero"><img src="' + esc(post.image) + '" alt="' + esc(post.title) + ' 카드뉴스 이미지"></div>'
-      : '';
+    var hero = '';
+    var heroImgs = (Array.isArray(post.images) && post.images.length > 1)
+      ? post.images
+      : (post.image ? [post.image] : []);
+    if (heroImgs.length > 1) {
+      hero = '<div class="article-hero article-hero-multi">' + heroImgs.map(function (src, i) {
+        return '<img src="' + esc(src) + '" alt="' + esc(post.title) + ' 카드뉴스 이미지 ' + (i + 1) + '" loading="lazy" decoding="async">';
+      }).join('') + '</div>';
+    } else if (heroImgs.length === 1) {
+      hero = '<div class="article-hero"><img src="' + esc(heroImgs[0]) + '" alt="' + esc(post.title) + ' 카드뉴스 이미지"></div>';
+    }
 
     el.modalScroll.innerHTML = '' +
       hero +
